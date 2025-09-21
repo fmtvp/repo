@@ -185,6 +185,16 @@ app.post('/test-login', async (req, res) => {
   }
 });
 
+// Delete all admins (for fresh setup)
+app.post('/delete-all-admins', async (req, res) => {
+  try {
+    const result = await Admin.deleteMany({});
+    res.json({ success: true, deletedCount: result.deletedCount });
+  } catch (error) {
+    res.json({ error: error.message });
+  }
+});
+
 // Admin auth routes
 app.get('/setup', async (req, res) => {
   const adminExists = await Admin.findOne({});
