@@ -9,7 +9,8 @@ const app = express();
 // MongoDB connection with proper error handling
 const mongoUrl = process.env.MONGO_URL || process.env.MONGODB_URI;
 if (!mongoUrl) {
-  console.error('MongoDB URL not provided. Set MONGO_URL or MONGODB_URI environment variable.');
+  console.error('MongoDB URL not provided. Set MONGO_URL environment variable.');
+  process.exit(1);
 }
 
 mongoose.connect(mongoUrl, {
@@ -17,6 +18,7 @@ mongoose.connect(mongoUrl, {
   useUnifiedTopology: true
 }).catch(err => {
   console.error('MongoDB connection error:', err);
+  process.exit(1);
 });
 
 // Schemas

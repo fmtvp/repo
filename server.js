@@ -10,6 +10,10 @@ const PORT = process.env.PORT || 3000;
 
 // MongoDB connection
 const mongoUrl = process.env.MONGO_URL;
+if (!mongoUrl) {
+  console.error('MONGO_URL environment variable is required');
+  process.exit(1);
+}
 mongoose.connect(mongoUrl);
 
 // Schemas
@@ -48,7 +52,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static('public'));
 app.use(session({
-  secret: process.env.SESSION_SECRET,
+  secret: process.env.SESSION_SECRET || 'fallback-secret-for-development',
   resave: false,
   saveUninitialized: false
 }));
