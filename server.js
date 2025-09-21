@@ -9,7 +9,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // MongoDB connection
-const mongoUrl = process.env.MONGO_URL || 'mongodb+srv://beceje7386_db_user:<password>@cluster0.wliqi1o.mongodb.net/confessions';
+const mongoUrl = process.env.MONGO_URL;
 mongoose.connect(mongoUrl);
 
 // Schemas
@@ -48,7 +48,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static('public'));
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'confession-secret',
+  secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false
 }));
