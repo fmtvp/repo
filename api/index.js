@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const session = require('express-session');
+const MongoStore = require('connect-mongo');
 const bcrypt = require('bcrypt');
 const path = require('path');
 
@@ -56,11 +57,16 @@ const ActivationCode = mongoose.model('ActivationCode', activationCodeSchema);
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'fallback-secret-change-in-production',
+  secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
+  store: MongoStore.create({
+    mongoUrl: mongoUrl,
+    touchAfter: 24 * 3600 // lazy session update
+  }),
   cookie: { 
     secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
     maxAge: 24 * 60 * 60 * 1000 // 24 hours
   }
 }));
