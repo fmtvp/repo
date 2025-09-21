@@ -1,53 +1,37 @@
 # Anonymous Confession App
 
-A minimal full-stack application for anonymous confessions with admin moderation.
+A serverless confession app with admin moderation, built for Vercel deployment.
 
 ## Features
 
-- **Public Form**: Users can submit anonymous confessions
-- **Admin Authentication**: Secure login system for admin access
-- **Admin CRUD**: Create, Read, Update, Delete confessions
-- **Public Index**: Display approved confessions
-- **Modern UI**: Clean, responsive design with tabbed admin interface
+- **Anonymous Confessions**: Submit confessions with activation codes
+- **Admin Panel**: Manage confessions and activation codes
+- **MongoDB Sessions**: Persistent sessions using MongoDB store
+- **Serverless Ready**: Optimized for Vercel deployment
+
+## Vercel Deployment
+
+### Environment Variables Required:
+- `MONGO_URL` - MongoDB connection string
+- `SESSION_SECRET` - Session secret key
+
+### Deploy Steps:
+1. Connect repository to Vercel
+2. Set environment variables
+3. Deploy automatically
+
+## Usage
+
+- **Public**: `/` - View approved confessions (requires activation code)
+- **Submit**: `/submit` - Submit new confession (requires activation code)  
+- **Setup**: `/setup` - Create first admin account (only when no admin exists)
+- **Admin**: `/admin/login` - Admin login
+- **Admin Panel**: `/admin` - Manage confessions and codes
 
 ## Tech Stack
 
 - Node.js + Express
-- MongoDB with Mongoose
-- EJS templating
-- Docker & Docker Compose
-
-## Quick Start
-
-```bash
-# Start with Docker
-docker-compose up --build
-
-# Or run locally (requires MongoDB)
-npm install
-npm start
-```
-
-Visit:
-- http://localhost:3000 - Public confessions
-- http://localhost:3000/submit - Submit confession
-- http://localhost:3000/admin - Admin panel (requires login)
-
-## Default Admin Credentials
-- Username: `admin`
-- Password: `admin123`
-
-**Important**: Change the default password in production!
-
-## API Endpoints
-
-- `GET /` - Public confessions page
-- `GET /submit` - Submission form
-- `POST /submit` - Submit confession
-- `GET /admin/login` - Admin login page
-- `POST /admin/login` - Admin authentication
-- `GET /admin` - Admin panel (authenticated)
-- `POST /admin/approve/:id` - Approve confession
-- `POST /admin/delete/:id` - Delete confession
-- `POST /admin/edit/:id` - Edit confession content
-- `POST /admin/logout` - Admin logout
+- MongoDB + Mongoose
+- EJS Templates
+- MongoDB Session Store
+- Vercel Serverless Functions
