@@ -42,13 +42,13 @@ const Admin = mongoose.model('Admin', adminSchema);
 const ActivationCode = mongoose.model('ActivationCode', activationCodeSchema);
 
 // Create default admin
-Admin.findOne({ username: 'admin' }).then(admin => {
-  if (!admin) {
-    bcrypt.hash(process.env.ADMIN_PASSWORD || 'admin123', 10).then(hash => {
-      new Admin({ username: 'admin', password: hash }).save();
-    });
-  }
-}).catch(err => console.log('Admin creation skipped:', err.message));
+// Admin.findOne({ username: 'admin' }).then(admin => {
+//   if (!admin) {
+//     bcrypt.hash(process.env.ADMIN_PASSWORD || 'admin123', 10).then(hash => {
+//       new Admin({ username: 'admin', password: hash }).save();
+//     });
+//   }
+// }).catch(err => console.log('Admin creation skipped:', err.message));
 
 // Middleware
 app.use(express.urlencoded({ extended: true }));
@@ -124,6 +124,30 @@ app.post('/submit', async (req, res) => {
 });
 
 // Admin auth routes
+app.get('/setup', async (req, res) => {
+  const adminExists = await Admin.findOne({});
+  if (adminExists) {
+    return res.status(404).send('Not Found');
+  }
+  res.render('setup', { error: req.query.error });
+});
+
+app.post('/setup', async (req, res) => {
+  const adminExists = await Admin.findOne({});
+  if (adminExists) {
+    return res.status(404).send('Not Found');
+  }
+  
+  const { username, password } = req.body;
+  if (!username || !password) {
+    return res.redirect('/setup?error=missing');
+  }
+  
+  const hash = await bcrypt.hash(password, 10);
+  await new Admin({ username, password: hash }).save();
+  res.redirect('/admin/login');
+});
+
 app.get('/admin/login', (req, res) => {
   const requiredUserAgent = process.env.ADMIN_USER_AGENT || 'confession-admin-person';
   if (req.get('User-Agent') !== requiredUserAgent) {
