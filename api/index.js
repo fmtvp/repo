@@ -237,6 +237,19 @@ app.get('/debug-confessions', async (req, res) => {
   }
 });
 
+// Test session route
+app.get('/test-session', (req, res) => {
+  if (!req.session.views) {
+    req.session.views = 0;
+  }
+  req.session.views++;
+  res.json({ 
+    sessionId: req.sessionID,
+    views: req.session.views,
+    sessionStore: 'MongoDB'
+  });
+});
+
 // Admin auth routes
 app.get('/setup', async (req, res) => {
   const adminExists = await Admin.findOne({});
