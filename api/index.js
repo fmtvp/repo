@@ -135,35 +135,43 @@ app.get('/setup', async (req, res) => {
 });
 
 app.post('/setup', async (req, res) => {
-  const adminExists = await Admin.findOne({});
-  if (adminExists) {
-    return res.status(404).send('Not Found');
+  try {
+    const adminExists = await Admin.findOne({});
+    if (adminExists) {
+      return res.status(404).send('Not Found');
+    }
+    
+    const { username, password } = req.body;
+    if (!username || !password) {
+      return res.redirect('/setup?error=missing');
+    }
+    
+    console.log('Creating admin with username:', username);
+    const hash = await bcrypt.hash(password, 10);
+    const newAdmin = await new Admin({ username, password: hash }).save();
+    console.log('Admin created successfully:', newAdmin._id);
+    
+    // Redirect with user-agent instruction
+    res.send(`
+      <html>
+        <head><title>Setup Complete</title></head>
+        <body style="font-family: Arial; background: #1a1a2e; color: #fff; padding: 40px; text-align: center;">
+          <h2 style="color: #e94560;">✅ Admin Account Created Successfully!</h2>
+          <p style="margin: 20px 0;">Username: <strong>${username}</strong></p>
+          <div style="background: rgba(233,69,96,0.1); border: 1px solid rgba(233,69,96,0.3); padding: 20px; border-radius: 10px; margin: 20px 0;">
+            <h3 style="color: #f27121;">🔑 To Access Admin Panel:</h3>
+            <p>1. Set your browser's user-agent to: <code style="background: rgba(0,0,0,0.5); padding: 4px 8px; border-radius: 4px;">confession-admin-person</code></p>
+            <p>2. Visit: <a href="/admin/login" style="color: #e94560;">/admin/login</a></p>
+            <p>3. Use the credentials you just created</p>
+          </div>
+          <p style="margin-top: 30px;"><a href="/" style="color: #f27121;">← Back to Home</a></p>
+        </body>
+      </html>
+    `);
+  } catch (error) {
+    console.error('Setup error:', error);
+    res.redirect('/setup?error=server');
   }
-  
-  const { username, password } = req.body;
-  if (!username || !password) {
-    return res.redirect('/setup?error=missing');
-  }
-  
-  const hash = await bcrypt.hash(password, 10);
-  await new Admin({ username, password: hash }).save();
-  
-  // Redirect with user-agent instruction
-  res.send(`
-    <html>
-      <head><title>Setup Complete</title></head>
-      <body style="font-family: Arial; background: #1a1a2e; color: #fff; padding: 40px; text-align: center;">
-        <h2 style="color: #e94560;">✅ Admin Account Created Successfully!</h2>
-        <p style="margin: 20px 0;">Username: <strong>${username}</strong></p>
-        <div style="background: rgba(233,69,96,0.1); border: 1px solid rgba(233,69,96,0.3); padding: 20px; border-radius: 10px; margin: 20px 0;">
-          <h3 style="color: #f27121;">🔑 To Access Admin Panel:</h3>
-          <p>1. Set your browser's user-agent to: <code style="background: rgba(0,0,0,0.5); padding: 4px 8px; border-radius: 4px;">confession-admin-person</code></p>
-          <p>2. Visit: <a href="/admin/login" style="color: #e94560;">/admin/login</a></p>
-        </div>
-        <p style="margin-top: 30px;"><a href="/" style="color: #f27121;">← Back to Home</a></p>
-      </body>
-    </html>
-  `);
 });
 
 app.get('/admin/login', (req, res) => {
@@ -191,15 +199,22 @@ app.get('/admin/login', (req, res) => {
 app.post('/admin/login', async (req, res) => {
   try {
     const { username, password } = req.body;
+    console.log('Login attempt for username:', username);
+    
     const admin = await Admin.findOne({ username });
+    console.log('Admin found:', !!admin);
     
     if (admin && await bcrypt.compare(password, admin.password)) {
+      console.log('Password match successful');
       req.session.adminId = admin._id;
+      console.log('Session set, redirecting to /admin');
       res.redirect('/admin');
     } else {
+      console.log('Login failed - invalid credentials');
       res.redirect('/admin/login?error=1');
     }
   } catch (error) {
+    console.error('Login error:', error);
     res.redirect('/admin/login?error=1');
   }
 });
