@@ -125,6 +125,23 @@ app.post('/submit', async (req, res) => {
   }
 });
 
+// Debug route to check admin accounts
+app.get('/debug-admin', async (req, res) => {
+  try {
+    const admins = await Admin.find({});
+    res.json({
+      adminCount: admins.length,
+      admins: admins.map(admin => ({
+        id: admin._id,
+        username: admin.username,
+        hasPassword: !!admin.password
+      }))
+    });
+  } catch (error) {
+    res.json({ error: error.message });
+  }
+});
+
 // Admin auth routes
 app.get('/setup', async (req, res) => {
   const adminExists = await Admin.findOne({});
