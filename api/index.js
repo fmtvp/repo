@@ -195,6 +195,42 @@ app.post('/delete-all-admins', async (req, res) => {
   }
 });
 
+// Debug route to check activation codes (no auth required)
+app.get('/debug-codes', async (req, res) => {
+  try {
+    const codes = await ActivationCode.find({});
+    res.json({
+      codeCount: codes.length,
+      codes: codes.map(code => ({
+        id: code._id,
+        code: code.code,
+        isActive: code.isActive,
+        createdAt: code.createdAt
+      }))
+    });
+  } catch (error) {
+    res.json({ error: error.message });
+  }
+});
+
+// Debug route to check confessions (no auth required)
+app.get('/debug-confessions', async (req, res) => {
+  try {
+    const confessions = await Confession.find({});
+    res.json({
+      confessionCount: confessions.length,
+      confessions: confessions.map(conf => ({
+        id: conf._id,
+        content: conf.content.substring(0, 50) + '...',
+        approved: conf.approved,
+        createdAt: conf.createdAt
+      }))
+    });
+  } catch (error) {
+    res.json({ error: error.message });
+  }
+});
+
 // Admin auth routes
 app.get('/setup', async (req, res) => {
   const adminExists = await Admin.findOne({});
