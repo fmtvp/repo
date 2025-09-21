@@ -145,7 +145,23 @@ app.post('/setup', async (req, res) => {
   
   const hash = await bcrypt.hash(password, 10);
   await new Admin({ username, password: hash }).save();
-  res.redirect('/admin/login');
+  
+  // Redirect with user-agent instruction
+  res.send(`
+    <html>
+      <head><title>Setup Complete</title></head>
+      <body style="font-family: Arial; background: #1a1a2e; color: #fff; padding: 40px; text-align: center;">
+        <h2 style="color: #e94560;">✅ Admin Account Created Successfully!</h2>
+        <p style="margin: 20px 0;">Username: <strong>${username}</strong></p>
+        <div style="background: rgba(233,69,96,0.1); border: 1px solid rgba(233,69,96,0.3); padding: 20px; border-radius: 10px; margin: 20px 0;">
+          <h3 style="color: #f27121;">🔑 To Access Admin Panel:</h3>
+          <p>1. Set your browser's user-agent to: <code style="background: rgba(0,0,0,0.5); padding: 4px 8px; border-radius: 4px;">confession-admin-person</code></p>
+          <p>2. Visit: <a href="/admin/login" style="color: #e94560;">/admin/login</a></p>
+        </div>
+        <p style="margin-top: 30px;"><a href="/" style="color: #f27121;">← Back to Home</a></p>
+      </body>
+    </html>
+  `);
 });
 
 app.get('/admin/login', (req, res) => {
