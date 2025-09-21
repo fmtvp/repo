@@ -6,9 +6,18 @@ const path = require('path');
 
 const app = express();
 
-// MongoDB connection
-const mongoUrl = process.env.MONGO_URL || 'mongodb+srv://beceje7386_db_user:<password>@cluster0.wliqi1o.mongodb.net/confessions';
-mongoose.connect(mongoUrl);
+// MongoDB connection with proper error handling
+const mongoUrl = process.env.MONGO_URL || process.env.MONGODB_URI;
+if (!mongoUrl) {
+  console.error('MongoDB URL not provided. Set MONGO_URL or MONGODB_URI environment variable.');
+}
+
+mongoose.connect(mongoUrl, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+}).catch(err => {
+  console.error('MongoDB connection error:', err);
+});
 
 // Schemas
 const confessionSchema = new mongoose.Schema({
@@ -35,19 +44,23 @@ const ActivationCode = mongoose.model('ActivationCode', activationCodeSchema);
 // Create default admin
 Admin.findOne({ username: 'admin' }).then(admin => {
   if (!admin) {
-    bcrypt.hash('admin123', 10).then(hash => {
+    bcrypt.hash(process.env.ADMIN_PASSWORD || 'admin123', 10).then(hash => {
       new Admin({ username: 'admin', password: hash }).save();
     });
   }
-});
+}).catch(err => console.log('Admin creation skipped:', err.message));
 
 // Middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'confession-secret',
+  secret: process.env.SESSION_SECRET || 'fallback-secret-change-in-production',
   resave: false,
-  saveUninitialized: false
+  saveUninitialized: false,
+  cookie: { 
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  }
 }));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '../views'));
@@ -67,19 +80,23 @@ app.get('/', (req, res) => {
 });
 
 app.post('/', async (req, res) => {
-  const { activationCode } = req.body;
-  
-  if (!activationCode) {
-    return res.render('index', { confessions: [], showForm: true, error: 'code_required' });
+  try {
+    const { activationCode } = req.body;
+    
+    if (!activationCode) {
+      return res.render('index', { confessions: [], showForm: true, error: 'code_required' });
+    }
+    
+    const code = await ActivationCode.findOne({ code: activationCode, isActive: true });
+    if (!code) {
+      return res.render('index', { confessions: [], showForm: true, error: 'invalid_code' });
+    }
+    
+    const confessions = await Confession.find({ approved: true }).sort({ createdAt: -1 });
+    res.render('index', { confessions, showForm: false, activationCode });
+  } catch (error) {
+    res.render('index', { confessions: [], showForm: true, error: 'server_error' });
   }
-  
-  const code = await ActivationCode.findOne({ code: activationCode, isActive: true });
-  if (!code) {
-    return res.render('index', { confessions: [], showForm: true, error: 'invalid_code' });
-  }
-  
-  const confessions = await Confession.find({ approved: true }).sort({ createdAt: -1 });
-  res.render('index', { confessions, showForm: false, activationCode });
 });
 
 app.get('/submit', (req, res) => {
@@ -87,37 +104,46 @@ app.get('/submit', (req, res) => {
 });
 
 app.post('/submit', async (req, res) => {
-  const { content, activationCode } = req.body;
-  
-  if (!activationCode) {
-    return res.redirect('/submit?error=code_required');
+  try {
+    const { content, activationCode } = req.body;
+    
+    if (!activationCode) {
+      return res.redirect('/submit?error=code_required');
+    }
+    
+    const code = await ActivationCode.findOne({ code: activationCode, isActive: true });
+    if (!code) {
+      return res.redirect('/submit?error=invalid_code');
+    }
+    
+    await new Confession({ content }).save();
+    res.redirect('/submit?success=1');
+  } catch (error) {
+    res.redirect('/submit?error=server_error');
   }
-  
-  const code = await ActivationCode.findOne({ code: activationCode, isActive: true });
-  if (!code) {
-    return res.redirect('/submit?error=invalid_code');
-  }
-  
-  await new Confession({ content }).save();
-  res.redirect('/submit?success=1');
 });
 
 // Admin auth routes
 app.get('/admin/login', (req, res) => {
-  if (req.get('User-Agent') !== 'confession-admin-person') {
+  const requiredUserAgent = process.env.ADMIN_USER_AGENT || 'confession-admin-person';
+  if (req.get('User-Agent') !== requiredUserAgent) {
     return res.status(404).send('Not Found');
   }
   res.render('login', { error: req.query.error });
 });
 
 app.post('/admin/login', async (req, res) => {
-  const { username, password } = req.body;
-  const admin = await Admin.findOne({ username });
-  
-  if (admin && await bcrypt.compare(password, admin.password)) {
-    req.session.adminId = admin._id;
-    res.redirect('/admin');
-  } else {
+  try {
+    const { username, password } = req.body;
+    const admin = await Admin.findOne({ username });
+    
+    if (admin && await bcrypt.compare(password, admin.password)) {
+      req.session.adminId = admin._id;
+      res.redirect('/admin');
+    } else {
+      res.redirect('/admin/login?error=1');
+    }
+  } catch (error) {
     res.redirect('/admin/login?error=1');
   }
 });
@@ -129,45 +155,73 @@ app.post('/admin/logout', (req, res) => {
 
 // Admin CRUD routes
 app.get('/admin', requireAuth, async (req, res) => {
-  const pending = await Confession.find({ approved: false }).sort({ createdAt: -1 });
-  const approved = await Confession.find({ approved: true }).sort({ createdAt: -1 });
-  const codes = await ActivationCode.find().sort({ createdAt: -1 });
-  res.render('admin', { pending, approved, codes });
+  try {
+    const pending = await Confession.find({ approved: false }).sort({ createdAt: -1 });
+    const approved = await Confession.find({ approved: true }).sort({ createdAt: -1 });
+    const codes = await ActivationCode.find().sort({ createdAt: -1 });
+    res.render('admin', { pending, approved, codes });
+  } catch (error) {
+    res.status(500).send('Server Error');
+  }
 });
 
 app.post('/admin/generate-code', requireAuth, async (req, res) => {
-  const crypto = require('crypto');
-  const chars = '0123456789abcdefghijklmnopqrstuvwxyz';
-  const generateSegment = () => Array.from({length: 8}, () => chars[crypto.randomInt(chars.length)]).join('');
-  const code = Array.from({length: 3}, generateSegment).join('-');
-  await new ActivationCode({ code }).save();
-  res.redirect('/admin');
+  try {
+    const crypto = require('crypto');
+    const chars = '0123456789abcdefghijklmnopqrstuvwxyz';
+    const generateSegment = () => Array.from({length: 8}, () => chars[crypto.randomInt(chars.length)]).join('');
+    const code = Array.from({length: 3}, generateSegment).join('-');
+    await new ActivationCode({ code }).save();
+    res.redirect('/admin');
+  } catch (error) {
+    res.redirect('/admin');
+  }
 });
 
 app.post('/admin/toggle-code/:id', requireAuth, async (req, res) => {
-  const code = await ActivationCode.findById(req.params.id);
-  await ActivationCode.findByIdAndUpdate(req.params.id, { isActive: !code.isActive });
-  res.redirect('/admin');
+  try {
+    const code = await ActivationCode.findById(req.params.id);
+    await ActivationCode.findByIdAndUpdate(req.params.id, { isActive: !code.isActive });
+    res.redirect('/admin');
+  } catch (error) {
+    res.redirect('/admin');
+  }
 });
 
 app.post('/admin/delete-code/:id', requireAuth, async (req, res) => {
-  await ActivationCode.findByIdAndDelete(req.params.id);
-  res.redirect('/admin');
+  try {
+    await ActivationCode.findByIdAndDelete(req.params.id);
+    res.redirect('/admin');
+  } catch (error) {
+    res.redirect('/admin');
+  }
 });
 
 app.post('/admin/approve/:id', requireAuth, async (req, res) => {
-  await Confession.findByIdAndUpdate(req.params.id, { approved: true });
-  res.redirect('/admin');
+  try {
+    await Confession.findByIdAndUpdate(req.params.id, { approved: true });
+    res.redirect('/admin');
+  } catch (error) {
+    res.redirect('/admin');
+  }
 });
 
 app.post('/admin/delete/:id', requireAuth, async (req, res) => {
-  await Confession.findByIdAndDelete(req.params.id);
-  res.redirect('/admin');
+  try {
+    await Confession.findByIdAndDelete(req.params.id);
+    res.redirect('/admin');
+  } catch (error) {
+    res.redirect('/admin');
+  }
 });
 
 app.post('/admin/edit/:id', requireAuth, async (req, res) => {
-  await Confession.findByIdAndUpdate(req.params.id, { content: req.body.content });
-  res.redirect('/admin');
+  try {
+    await Confession.findByIdAndUpdate(req.params.id, { content: req.body.content });
+    res.redirect('/admin');
+  } catch (error) {
+    res.redirect('/admin');
+  }
 });
 
 module.exports = app;
