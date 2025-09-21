@@ -163,6 +163,28 @@ app.post('/reset-admin', async (req, res) => {
   }
 });
 
+// Test login without session
+app.post('/test-login', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    console.log('Test login attempt for username:', username);
+    
+    const admin = await Admin.findOne({ username });
+    console.log('Admin found:', !!admin);
+    
+    if (admin && await bcrypt.compare(password, admin.password)) {
+      console.log('Password match successful');
+      res.json({ success: true, message: 'Login successful', adminId: admin._id });
+    } else {
+      console.log('Login failed - invalid credentials');
+      res.json({ success: false, message: 'Invalid credentials' });
+    }
+  } catch (error) {
+    console.error('Login error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
 // Admin auth routes
 app.get('/setup', async (req, res) => {
   const adminExists = await Admin.findOne({});
