@@ -142,6 +142,27 @@ app.get('/debug-admin', async (req, res) => {
   }
 });
 
+// Reset admin password (only if no other admins exist)
+app.post('/reset-admin', async (req, res) => {
+  try {
+    const { newPassword } = req.body;
+    if (!newPassword) {
+      return res.json({ error: 'Password required' });
+    }
+    
+    const adminCount = await Admin.countDocuments();
+    if (adminCount !== 1) {
+      return res.json({ error: 'Reset only allowed with exactly one admin' });
+    }
+    
+    const hash = await bcrypt.hash(newPassword, 10);
+    await Admin.updateOne({}, { password: hash });
+    res.json({ success: true, message: 'Password reset successfully' });
+  } catch (error) {
+    res.json({ error: error.message });
+  }
+});
+
 // Admin auth routes
 app.get('/setup', async (req, res) => {
   const adminExists = await Admin.findOne({});
