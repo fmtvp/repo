@@ -131,7 +131,7 @@ app.post('/setup', async (req, res) => {
   const hash = await bcrypt.hash(password, 10);
   await new Admin({ username, password: hash }).save();
   
-  // Redirect with user-agent instruction
+  // Redirect with success message
   res.send(`
     <html>
       <head><title>Setup Complete</title></head>
@@ -139,9 +139,9 @@ app.post('/setup', async (req, res) => {
         <h2 style="color: #e94560;">✅ Admin Account Created Successfully!</h2>
         <p style="margin: 20px 0;">Username: <strong>${username}</strong></p>
         <div style="background: rgba(233,69,96,0.1); border: 1px solid rgba(233,69,96,0.3); padding: 20px; border-radius: 10px; margin: 20px 0;">
-          <h3 style="color: #f27121;">🔑 To Access Admin Panel:</h3>
-          <p>1. Set your browser's user-agent to: <code style="background: rgba(0,0,0,0.5); padding: 4px 8px; border-radius: 4px;">confession-admin-person</code></p>
-          <p>2. Visit: <a href="/admin/login" style="color: #e94560;">/admin/login</a></p>
+          <h3 style="color: #f27121;">🔑 Access Admin Panel:</h3>
+          <p><a href="/admin/login" style="color: #e94560; font-size: 1.2em;">Go to Admin Login →</a></p>
+          <p>Use the credentials you just created</p>
         </div>
         <p style="margin-top: 30px;"><a href="/" style="color: #f27121;">← Back to Home</a></p>
       </body>
@@ -150,23 +150,6 @@ app.post('/setup', async (req, res) => {
 });
 
 app.get('/admin/login', (req, res) => {
-  if (req.get('User-Agent') !== 'confession-admin-person') {
-    return res.send(`
-      <html>
-        <head><title>Access Denied</title></head>
-        <body style="font-family: Arial; background: #1a1a2e; color: #fff; padding: 40px; text-align: center;">
-          <h2 style="color: #e94560;">🚫 Access Denied</h2>
-          <div style="background: rgba(233,69,96,0.1); border: 1px solid rgba(233,69,96,0.3); padding: 20px; border-radius: 10px; margin: 20px 0;">
-            <h3 style="color: #f27121;">🔑 To Access Admin Panel:</h3>
-            <p>Set your browser's user-agent to:</p>
-            <code style="background: rgba(0,0,0,0.5); padding: 8px 12px; border-radius: 4px; font-size: 1.1em;">confession-admin-person</code>
-            <p style="margin-top: 15px;">Then refresh this page</p>
-          </div>
-          <p><a href="/" style="color: #f27121;">← Back to Home</a></p>
-        </body>
-      </html>
-    `);
-  }
   res.render('login', { error: req.query.error });
 });
 
