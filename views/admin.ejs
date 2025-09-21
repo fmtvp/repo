@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Control Panel 🚀</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #e94560;
+            overflow-x: hidden;
+        }
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: radial-gradient(2px 2px at 20px 30px, #eee, transparent),
+                        radial-gradient(2px 2px at 40px 70px, rgba(255,255,255,0.8), transparent),
+                        radial-gradient(1px 1px at 90px 40px, #fff, transparent);
+            background-size: 200px 100px;
+            animation: sparkle 3s linear infinite;
+        }
+        @keyframes sparkle {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 0.4; }
+        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; position: relative; z-index: 1; }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: #fff;
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(45deg, #e94560, #f27121, #e94560);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(233, 69, 96, 0.5);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        @keyframes glow {
+            from { filter: drop-shadow(0 0 20px rgba(233, 69, 96, 0.5)); }
+            to { filter: drop-shadow(0 0 30px rgba(242, 113, 33, 0.8)); }
+        }
+        .logout-btn {
+            background: linear-gradient(45deg, #e94560, #f27121);
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .logout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(233, 69, 96, 0.3);
+        }
+        .tabs {
+            display: flex;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(15px);
+            border-radius: 15px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .tab {
+            flex: 1;
+            padding: 15px 20px;
+            background: transparent;
+            color: rgba(255, 255, 255, 0.7);
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-weight: 500;
+        }
+        .tab.active {
+            background: linear-gradient(45deg, #e94560, #f27121);
+            color: #fff;
+            box-shadow: 0 5px 15px rgba(233, 69, 96, 0.3);
+        }
+        .tab:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .confession {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 25px;
+            margin-bottom: 20px;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .confession:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #e94560, #f27121, #e94560);
+            border-radius: 20px 20px 0 0;
+        }
+        .confession:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+            border-color: rgba(233, 69, 96, 0.3);
+        }
+        .confession-text {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            color: #fff;
+        }
+        .confession-date {
+            color: #f27121;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        .btn-approve {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+        }
+        .btn-delete {
+            background: linear-gradient(45deg, #dc3545, #e94560);
+            color: white;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        .generate-btn {
+            background: linear-gradient(45deg, #e94560, #f27121);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(233, 69, 96, 0.3);
+        }
+        .code-item {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .code-text {
+            font-family: 'Courier New', monospace;
+            font-size: 1.2rem;
+            color: #f27121;
+            font-weight: bold;
+        }
+        .code-status {
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        .status-active {
+            background: rgba(40, 167, 69, 0.2);
+            color: #28a745;
+            border: 1px solid rgba(40, 167, 69, 0.3);
+        }
+        .status-inactive {
+            background: rgba(220, 53, 69, 0.2);
+            color: #dc3545;
+            border: 1px solid rgba(220, 53, 69, 0.3);
+        }
+        .empty-state {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1.2rem;
+            margin-top: 40px;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+        @media (max-width: 768px) {
+            .header { flex-direction: column; gap: 15px; }
+            .tabs { flex-direction: column; }
+            .actions { flex-direction: column; }
+            .code-item { flex-direction: column; gap: 15px; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="stars"></div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Admin Control Panel</h1>
+            <form method="POST" action="/admin/logout">
+                <button type="submit" class="logout-btn">🚪 Logout</button>
+            </form>
+        </div>
+
+        <div class="tabs">
+            <div class="tab active" onclick="showTab('pending')">
+                📋 PENDING (<%= pending.length %>)
+            </div>
+            <div class="tab" onclick="showTab('approved')">
+                ✅ PUBLISHED (<%= approved.length %>)
+            </div>
+            <div class="tab" onclick="showTab('codes')">
+                🔑 ACCESS CODES (<%= codes.length %>)
+            </div>
+        </div>
+
+        <div id="pending" class="tab-content active">
+            <% if (pending.length === 0) { %>
+                <div class="empty-state">
+                    🎯 All Clear - No Pending Confessions
+                </div>
+            <% } else { %>
+                <% pending.forEach(confession => { %>
+                    <div class="confession">
+                        <div class="confession-text"><%= confession.content %></div>
+                        <div class="confession-date">📅 <%= confession.createdAt.toLocaleDateString() %></div>
+                        <div class="actions">
+                            <form method="POST" action="/admin/approve/<%= confession._id %>" style="display: inline;">
+                                <button type="submit" class="btn btn-approve">✅ APPROVE</button>
+                            </form>
+                            <form method="POST" action="/admin/delete/<%= confession._id %>" style="display: inline;">
+                                <button type="submit" class="btn btn-delete">🗑️ DELETE</button>
+                            </form>
+                        </div>
+                    </div>
+                <% }) %>
+            <% } %>
+        </div>
+
+        <div id="approved" class="tab-content">
+            <% if (approved.length === 0) { %>
+                <div class="empty-state">
+                    📝 No Published Confessions Yet
+                </div>
+            <% } else { %>
+                <% approved.forEach(confession => { %>
+                    <div class="confession">
+                        <div class="confession-text"><%= confession.content %></div>
+                        <div class="confession-date">📅 <%= confession.createdAt.toLocaleDateString() %></div>
+                        <div class="actions">
+                            <form method="POST" action="/admin/edit/<%= confession._id %>" style="display: inline;">
+                                <input type="text" name="content" value="<%= confession.content %>" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 8px 12px; border-radius: 15px; margin-right: 10px;">
+                                <button type="submit" class="btn btn-approve">✏️ EDIT</button>
+                            </form>
+                            <form method="POST" action="/admin/delete/<%= confession._id %>" style="display: inline;">
+                                <button type="submit" class="btn btn-delete">🗑️ DELETE</button>
+                            </form>
+                        </div>
+                    </div>
+                <% }) %>
+            <% } %>
+        </div>
+
+        <div id="codes" class="tab-content">
+            <form method="POST" action="/admin/generate-code">
+                <button type="submit" class="generate-btn">🔑 Generate New Code</button>
+            </form>
+
+            <% if (codes.length === 0) { %>
+                <div class="empty-state">
+                    🔐 No Activation Codes Generated
+                </div>
+            <% } else { %>
+                <% codes.forEach(code => { %>
+                    <div class="code-item">
+                        <div>
+                            <div class="code-text"><%= code.code %></div>
+                            <div style="margin-top: 5px;">
+                                <span class="code-status <%= code.isActive ? 'status-active' : 'status-inactive' %>">
+                                    <%= code.isActive ? '🟢 ACTIVE' : '🔴 INACTIVE' %>
+                                </span>
+                                <span style="color: rgba(255,255,255,0.7); margin-left: 15px; font-size: 0.9rem;">
+                                    📅 <%= code.createdAt.toLocaleDateString() %>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="actions">
+                            <form method="POST" action="/admin/toggle-code/<%= code._id %>" style="display: inline;">
+                                <button type="submit" class="btn <%= code.isActive ? 'btn-delete' : 'btn-approve' %>">
+                                    <%= code.isActive ? '🔴 DEACTIVATE' : '🟢 ACTIVATE' %>
+                                </button>
+                            </form>
+                            <form method="POST" action="/admin/delete-code/<%= code._id %>" style="display: inline;">
+                                <button type="submit" class="btn btn-delete" onclick="return confirm('Delete this activation code?')">
+                                    🗑️ DELETE
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                <% }) %>
+            <% } %>
+        </div>
+    </div>
+
+    <script>
+        function showTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelector(`[onclick="showTab('${tab}')"]`).classList.add('active');
+            document.getElementById(tab).classList.add('active');
+        }
+    </script>
+</body>
+</html>

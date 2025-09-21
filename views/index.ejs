@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Campus Confessions 🎓</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #e94560;
+            overflow-x: hidden;
+        }
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: radial-gradient(2px 2px at 20px 30px, #eee, transparent),
+                        radial-gradient(2px 2px at 40px 70px, rgba(255,255,255,0.8), transparent),
+                        radial-gradient(1px 1px at 90px 40px, #fff, transparent);
+            background-size: 200px 100px;
+            animation: sparkle 3s linear infinite;
+        }
+        @keyframes sparkle {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 0.4; }
+        }
+        .container { max-width: 900px; margin: 0 auto; padding: 20px; position: relative; z-index: 1; }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: #fff;
+            position: relative;
+        }
+        .header h1 {
+            font-size: 3.5rem;
+            margin-bottom: 15px;
+            background: linear-gradient(45deg, #e94560, #f27121, #e94560);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(233, 69, 96, 0.5);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        @keyframes glow {
+            from { filter: drop-shadow(0 0 20px rgba(233, 69, 96, 0.5)); }
+            to { filter: drop-shadow(0 0 30px rgba(242, 113, 33, 0.8)); }
+        }
+        .header p {
+            font-size: 1.3rem;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+        .access-form {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 20px;
+            margin: 30px 0;
+            text-align: center;
+        }
+        .access-form input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            padding: 15px 20px;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            margin: 10px;
+            width: 250px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+        .access-form input::placeholder { color: rgba(255, 255, 255, 0.6); }
+        .access-btn {
+            background: linear-gradient(45deg, #e94560, #f27121);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s ease;
+        }
+        .access-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(233, 69, 96, 0.3);
+        }
+        .error {
+            color: #ff6b6b;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        .submit-btn {
+            display: inline-block;
+            background: linear-gradient(45deg, #e94560, #f27121);
+            color: white;
+            padding: 18px 40px;
+            text-decoration: none;
+            border-radius: 50px;
+            margin: 25px 0;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(233, 69, 96, 0.3);
+        }
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(233, 69, 96, 0.5);
+        }
+        .confession {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 25px;
+            margin-bottom: 20px;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .confession:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #e94560, #f27121, #e94560);
+            border-radius: 20px 20px 0 0;
+        }
+        .confession:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            border-color: rgba(233, 69, 96, 0.3);
+        }
+        .confession-text {
+            font-size: 1.1rem;
+            line-height: 1.7;
+            margin-bottom: 15px;
+            color: #fff;
+        }
+        .confession-date {
+            color: #f27121;
+            font-size: 0.9rem;
+            text-align: right;
+            font-weight: 500;
+        }
+        .empty-state {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1.3rem;
+            margin-top: 60px;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+        @media (max-width: 768px) {
+            .header h1 { font-size: 2.5rem; }
+            .container { padding: 15px; }
+            .access-form input { width: 200px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="stars"></div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>🎓 Campus Confessions</h1>
+            <p>Share your college stories anonymously</p>
+        </div>
+
+        <% if (showForm) { %>
+            <div class="access-form">
+                <h3 style="color: #fff; margin-bottom: 20px;">🔑 Enter Activation Code to View Confessions</h3>
+                <form method="POST" action="/">
+                    <input type="text" name="activationCode" placeholder="ACTIVATION CODE" required>
+                    <br>
+                    <button type="submit" class="access-btn">View Confessions</button>
+                </form>
+                <% if (typeof error !== 'undefined') { %>
+                    <div class="error">
+                        <% if (error === 'code_required') { %>
+                            ❌ Activation code is required
+                        <% } else if (error === 'invalid_code') { %>
+                            ❌ Invalid or inactive activation code
+                        <% } %>
+                    </div>
+                <% } %>
+            </div>
+        <% } else { %>
+            <div style="text-align: center; margin-bottom: 30px;">
+                <a href="/submit?code=<%= activationCode %>" class="submit-btn">✨ Add Your Confession</a>
+            </div>
+
+            <% if (confessions.length === 0) { %>
+                <div class="empty-state">
+                    <p>🤫 No confessions yet...</p>
+                    <p style="font-size: 1rem; margin-top: 10px; opacity: 0.8;">Be the first to share your campus story!</p>
+                </div>
+            <% } else { %>
+                <% confessions.forEach(confession => { %>
+                    <div class="confession">
+                        <div class="confession-text"><%= confession.content %></div>
+                        <div class="confession-date">📅 <%= confession.createdAt.toLocaleDateString() %></div>
+                    </div>
+                <% }) %>
+            <% } %>
+        <% } %>
+    </div>
+</body>
+</html>

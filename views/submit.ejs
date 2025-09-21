@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Spill the Tea ☕</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+        }
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: radial-gradient(2px 2px at 20px 30px, #eee, transparent),
+                        radial-gradient(2px 2px at 40px 70px, rgba(255,255,255,0.8), transparent),
+                        radial-gradient(1px 1px at 90px 40px, #fff, transparent);
+            background-size: 200px 100px;
+            animation: sparkle 3s linear infinite;
+        }
+        @keyframes sparkle {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 0.4; }
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 25px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 90%;
+            position: relative;
+            z-index: 1;
+        }
+        .container:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #e94560, #f27121, #e94560);
+            border-radius: 25px 25px 0 0;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #fff;
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #e94560, #f27121);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .header p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+        .code-warning {
+            color: #f27121;
+            font-size: 0.9rem;
+            background: rgba(242, 113, 33, 0.1);
+            padding: 8px 15px;
+            border-radius: 15px;
+            display: inline-block;
+            border: 1px solid rgba(242, 113, 33, 0.3);
+        }
+        .form-group {
+            margin-bottom: 25px;
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+            color: #fff;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            font-size: 1rem;
+            font-family: inherit;
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #e94560;
+            box-shadow: 0 0 20px rgba(233, 69, 96, 0.3);
+            background: rgba(255, 255, 255, 0.08);
+        }
+        input::placeholder, textarea::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+        .submit-btn {
+            background: linear-gradient(45deg, #e94560, #f27121);
+            color: white;
+            padding: 18px 40px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+        .submit-btn:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        .submit-btn:hover:before {
+            left: 100%;
+        }
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(233, 69, 96, 0.4);
+        }
+        .back-link {
+            display: inline-block;
+            color: #f27121;
+            text-decoration: none;
+            margin-top: 20px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .back-link:hover {
+            color: #e94560;
+            text-decoration: underline;
+        }
+        .success, .error {
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+        .success {
+            background: rgba(46, 204, 113, 0.1);
+            color: #2ecc71;
+            border: 1px solid rgba(46, 204, 113, 0.3);
+        }
+        .error {
+            background: rgba(231, 76, 60, 0.1);
+            color: #e74c3c;
+            border: 1px solid rgba(231, 76, 60, 0.3);
+        }
+        .char-count {
+            text-align: right;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+            margin-top: 8px;
+        }
+        .floating-emoji {
+            position: absolute;
+            font-size: 1.5rem;
+            animation: float 4s ease-in-out infinite;
+            opacity: 0.4;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-15px) rotate(5deg); }
+        }
+        .emoji-1 { top: 10%; right: 10%; animation-delay: 0s; }
+        .emoji-2 { bottom: 15%; left: 10%; animation-delay: 2s; }
+        @media (max-width: 768px) {
+            .header h1 { font-size: 2.2rem; }
+            .container { padding: 25px; }
+            .floating-emoji { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="stars"></div>
+    <div class="floating-emoji emoji-1">🤫</div>
+    <div class="floating-emoji emoji-2">💭</div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>☕ Spill the Tea</h1>
+            <p>Share your campus confession anonymously</p>
+            <div class="code-warning">
+                🔑 Activation code required (ask your admin)
+            </div>
+        </div>
+
+        <% if (query.success) { %>
+            <div class="success">
+                🎉 Your confession has been submitted! It'll be reviewed before going live.
+            </div>
+        <% } %>
+
+        <% if (query.error === 'code_required') { %>
+            <div class="error">
+                🚫 Oops! You need an activation code to submit.
+            </div>
+        <% } %>
+
+        <% if (query.error === 'invalid_code') { %>
+            <div class="error">
+                ❌ Invalid activation code. Get a fresh one from admin!
+            </div>
+        <% } %>
+
+        <form method="POST">
+            <div class="form-group">
+                <label for="activationCode">🔑 Activation Code</label>
+                <input 
+                    type="text" 
+                    name="activationCode" 
+                    id="activationCode" 
+                    placeholder="Enter your secret code..." 
+                    value="<%= query.code || '' %>"
+                    required
+                >
+            </div>
+            <div class="form-group">
+                <label for="content">💭 What's the tea?</label>
+                <textarea 
+                    name="content" 
+                    id="content" 
+                    placeholder="Spill your campus story, crush confessions, professor rants, dorm drama... we're all ears! 👂" 
+                    required
+                    maxlength="1000"
+                    oninput="updateCharCount()"
+                ></textarea>
+                <div class="char-count" id="charCount">0/1000 characters</div>
+            </div>
+            <button type="submit" class="submit-btn">🚀 Submit Anonymously</button>
+        </form>
+
+        <a href="/" class="back-link">← Back to Campus Confessions</a>
+    </div>
+
+    <script>
+        function updateCharCount() {
+            const textarea = document.getElementById('content');
+            const charCount = document.getElementById('charCount');
+            const count = textarea.value.length;
+            charCount.textContent = `${count}/1000 characters`;
+            
+            if (count > 800) {
+                charCount.style.color = '#e74c3c';
+            } else if (count > 600) {
+                charCount.style.color = '#f27121';
+            } else {
+                charCount.style.color = 'rgba(255, 255, 255, 0.6)';
+            }
+        }
+    </script>
+</body>
+</html>
